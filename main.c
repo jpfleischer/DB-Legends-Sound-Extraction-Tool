@@ -110,6 +110,7 @@ int main()
                             {
                                 if(extract_sorted_bat == NULL)
                                 {
+                                    // The files here or under will be opened regardless of any file or the directory existing. Reason unknown.
                                     extract_sorted_bat = fopen("Extract_Sorted.bat","w");
                                     if (extract_sorted_bat == NULL)
                                     {
@@ -371,8 +372,9 @@ void createOutputFolder(char name[],char output_directory[], char old_path[], co
             strcat(out_name,token);
 
         }
-        else
+        else 
         {
+            // This will cause a crash if a specific file with description "gacha_cmn" is in the input folder. No other files cause a crash as of March 2023.
             token = strtok(NULL, "_");
             token[0] = toupper(token[0]);
             strcat(out_name,token);
