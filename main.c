@@ -346,9 +346,9 @@ void createOutputFolder(char name[],char output_directory[], char old_path[], co
                 strcpy(temp,"/Rising Rush/");
             else if(strcmp(temp_token,"cutin")==0)
                 strcpy(temp,"/Cutin/");
-            else if(strstr(token,"Provo")!=NULL)
+            else if(strstr(temp,"Provo")!=NULL)
                 strcpy(temp,"/Provocation/");
-            else if(strcmp(token,"formchange") == 0)
+            else if(strcmp(temp,"formchange") == 0)
                 strcpy(temp,"/Transformation/");
 
             strcat(out_name,temp);
