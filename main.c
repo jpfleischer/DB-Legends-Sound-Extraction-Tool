@@ -219,8 +219,8 @@ int main()
     double time_taken_for_sort = ((double)count_time)/CLOCKS_PER_SEC;
     if(success_counter>0 || not_sound_counter>0 || failed_counter>0)
     {
-        printf("\nProcess time: %.2lf seconds\n",time_taken_for_sort);
-        fprintf(log,"\nProcess time: %.2lf seconds\n",time_taken_for_sort);
+        printf("\n>> Process time: %.2lf seconds\n",time_taken_for_sort);
+        fprintf(log,"\n>> Process time: %.2lf seconds\n",time_taken_for_sort);
         if(not_sound_counter>0)
         {
             printf("\n%d Files aren't sound files. You can find them in the Assets-Movies folder\n",not_sound_counter);
@@ -236,7 +236,7 @@ int main()
             printf("\n%d Files were successfully sorted.\n",success_counter);
             fprintf(log,"\n%d Files were successfully sorted.\n",success_counter);
             int x;
-            printf("\nExtract sorted files now? 1 = yes , 0 = no\n");
+            printf("\n>> Extract sorted files now? 1 = yes , 0 = no\n");
             scanf("%d",&x);
             if(x==1)
             {
@@ -247,8 +247,8 @@ int main()
                 count_time_extract = clock() - count_time_extract;
                 double time_taken_for_extract = ((double)count_time_extract)/CLOCKS_PER_SEC;
 
-                printf("\nExtracting files took %.2lf seconds.\n",time_taken_for_extract);
-                fprintf(log,"\nSorted Files were successfully extracted taking a total of %.2lf seconds.\n",time_taken_for_extract);
+                printf("\n>> Extracting files took %.2lf seconds.\n",time_taken_for_extract);
+                fprintf(log,"\n>> Sorted Files were successfully extracted taking a total of %.2lf seconds.\n",time_taken_for_extract);
                 getchar();
             }
             else
@@ -461,6 +461,9 @@ void createOutputFolder(char name[],char output_directory[], char old_path[], co
             token[0] = toupper(token[0]);
 
             strcat(out_name,token);
+
+            createDirectory(out_name,log);
+
             strcat(out_name,"/Intro/");
         }
         else
