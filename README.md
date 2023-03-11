@@ -7,9 +7,9 @@ Steps:
 
 Recommended: Don't download all game data and just play with the characters you want the files of. 
 
-OR
+OR (Better)
 
-\>\> A text file with all links for the game's sound files and their description is provided (by crazydoomy#4471), you can find it above and in the release. Download the files you want, and follow the instructions for the batch file (also provided) or use the tool on them.
+\>\> A text file with all links for the game's sound files -as of March 10th- and their description is provided (by crazydoomy#4471), you can find it above and in the release. Download the files you want, and follow the instructions for the batch file (also provided) or use the tool on them.
 
 The following is if you decide to use the tool on a large number of files:
 
@@ -28,7 +28,6 @@ The following is if you decide to use the tool on a large number of files:
 7 - I recommend converting the .wav files to .ogg as they'd be taking up potentially 10x the space otherwise.
 
 The streamingassetbundles folder includes assets, movies and sound files of types I couldn't directly extract, they'll be put in the right folders.
-The Sound Effects folder might include story lines, you'll have to listen to them individually. 
 
 Author Note: 
 
@@ -36,11 +35,11 @@ There is a lot that could be changed and added to make the sorting nearly perfec
 
 Very Specific Notes: 
 - The tool sorts the files based on the description inside the packages, it highly depends on the devs using consistent naming patterns, avoiding mistakes and keeping them separated, and thus it's far from perfect. Extracting the files shows their individual content in their name and should make it easier, and while it's something I can make the tool do, I'd rather not. 
-- There are very few cases of the sort not working correctly (not using the character name) that I chose to ignore due to their infrequency. As for files that fail to sort, there are currently 88 of them, and most were released by the 2nd Anniversary of the game. If you're looking for newer characters or sounds, you can ignore them in most cases.
+- There are very few cases of the sort not working correctly (not using the character name) that I chose to ignore due to their infrequency. As for files that fail to sort, there are currently 88 of them, this cannot be fixed without a lot of file modification, so you'll have to look at them yourself. 
 - Backup your files and don't use common names when renaming them in case anything goes wrong. I'm very inexperienced in C and batch files could be dangerous.
-- The tool was tested on 19991 files (everything the japanese version of the game has by March 2023). One of the files will cause an error and crash, in case you run into that file, move it to another folder, and run the process again after extracting or saving your batch files (as they get replaced every run), this will be addressed in a future release. 
+- The tool was tested on 19991 files (everything the japanese version of the game has by March 2023). There shouldn't be any problems as long as the tool has read and write permissions.
 - I chose to remove IDs from names, and to avoid collisions, the extraction process will include the original file name at the start, which might make it hard to see the description if the name is long. 
-- The sorting process could take a few seconds to a minute, the extraction process a minute to several. If the sorting process is taking much longer you can inform me to perhaps consider looking at its efficiency. I don't have sufficient knowledge at the moment to noticeably improve it as it likely relies on storage drive speed for the most part.
+- The sorting process could take a few seconds to a minute, the extraction process a minute to several. If the sorting process is taking much longer you can inform me to perhaps consider looking at its efficiency, although it should only depend on storage drive speed. The extraction process is purely done through vgmstream, if you feel like it's using a lot of resources, it's likely an install monitoring app or your antivirus going through the outputs.
 - Files that share the same name and output folder will be safely ignored, it's right to assume that's the reason some files are not being moved. 
 - Audio is mono for most/all files as far as I could tell. You're likely to want to improve their quality before using them in your projects.
 
