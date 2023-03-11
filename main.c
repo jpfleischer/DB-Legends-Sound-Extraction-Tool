@@ -316,7 +316,7 @@ void createOutputFolder(char name[],char output_directory[], char old_path[], co
     char folder[100];
     int might_not_extract_flag = 0;
 
-    if(strstr(name,"_se")!=NULL || strstr(name,"cmn")!=NULL)
+    if(strstr(name,"_se")!=NULL || strstr(name,"cmn")!=NULL || strstr(name,"detailed")!=NULL)
     {
         strcat(out_name,"Sound Effects/");
     }
@@ -464,6 +464,9 @@ void createOutputFolder(char name[],char output_directory[], char old_path[], co
             createDirectory(out_name,log);
 
             strcat(out_name,"/Intro/");
+        }
+        else  if(strcmp(token,"sys")==0){
+            strcat(out_name,"Messages/");
         }
         else
         {
