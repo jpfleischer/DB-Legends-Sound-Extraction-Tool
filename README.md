@@ -33,7 +33,7 @@ Author Note:
 
 There is a lot that could be changed and added to make the sorting nearly perfect. In the tool's current state you might have to do some manual work when used with large numbers of files, I however can't promise a better version for at least a few years after my final update to it using C, as this was just to test the language.
 
-Very Specific Notes: 
+Very Specific Notes You Can Ignore: 
 - The tool sorts the files based on the description inside the packages, it highly depends on the devs using consistent naming patterns, avoiding mistakes and keeping them separated, and thus it's far from perfect. Extracting the files shows their individual content in their name and should make it easier, and while it's something I can make the tool do, I'd rather not. 
 - There are very few cases of the sort not working correctly (not using the character name) that I chose to ignore due to their infrequency. As for files that fail to sort, there are currently 88 of them, this cannot be fixed without a lot of file modification, so you'll have to look at them yourself. 
 - Backup your files and don't use common names when renaming them in case anything goes wrong. I'm very inexperienced in C and batch files could be dangerous.
