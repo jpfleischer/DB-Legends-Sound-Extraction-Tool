@@ -120,8 +120,8 @@ int main()
 
                         createDirectory(output_folder,log);
                         moveOutputFile(entry_path,output_path,output_folder,NULL,NULL,log);
-                        fflush(log);
                         not_sound_counter++;
+                        fflush(log);
                         continue;
                     }
                     else
@@ -139,7 +139,6 @@ int main()
                                 fclose(entry_file);
                                 puts(buffer);
                                 fprintf(log,"%s\n",buffer);
-                                fflush(log);
                                 createOutputFolder(buffer,output_dir,entry_path,path,extract_sorted_bat,del_sorted_bat,log);
                                 failed_to_sort = 0;
                                 success_counter++;
@@ -346,9 +345,9 @@ void createOutputFolder(char name[],char output_directory[], char old_path[], co
                 strcpy(temp,"/Rising Rush/");
             else if(strcmp(temp_token,"cutin")==0)
                 strcpy(temp,"/Cutin/");
-            else if(strstr(temp,"Provo")!=NULL)
+            else if(strstr(temp_token,"Provo")!=NULL)
                 strcpy(temp,"/Provocation/");
-            else if(strcmp(temp,"formchange") == 0)
+            else if(strcmp(temp_token,"formchange") == 0)
                 strcpy(temp,"/Transformation/");
 
             strcat(out_name,temp);
