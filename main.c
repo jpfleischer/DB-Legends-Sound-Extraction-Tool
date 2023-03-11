@@ -7,22 +7,31 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <time.h>
 
 // If you can give me advice on how to make the code less rubbish I'd be forever grateful
-void createDirectory(char[]);
-void moveOutputFile(char[], char[], char[], FILE*, FILE*);
-void createOutputFolder(char[], char[], char[], const char*, FILE*, FILE*);
+void createDirectory(char[], FILE* log);
+void moveOutputFile(char[], char[], char[], FILE* vgmstream, FILE* delbatch, FILE* log);
+void createOutputFolder(char[], char[], char[], const char*, FILE* vgmstream, FILE* delbatch, FILE* log);
 char* replace_char(char[]);
 
 int main()
 {
-    createDirectory("vgmstream-cli");
+    FILE *log  = fopen("log.txt", "w");
+    if (log == NULL)
+    {
+        printf("Error : Failed to open log file - %s\n", strerror(errno));
+        return 1;
+    }
+    clock_t count_time = clock();
+    fprintf(log,"Process Started\n");
+    createDirectory("vgmstream-cli",log);
     DIR *d;
     struct dirent *dir;
     FILE *entry_file;
     char entry_path[100];
     char input_dir[10] = "./Input";
-    createDirectory(input_dir);
+    createDirectory(input_dir,log);
 
     int bufferLength = 200;
     char buffer[bufferLength];
@@ -32,33 +41,46 @@ int main()
     char output_dir[15] = "./Extracted/";
     char output_folder[40];
     int success_counter = 0;
-    createDirectory(output_dir);
+    createDirectory(output_dir,log);
 
-    int failed_to_sort;
+    int failed_to_sort = 0;
     int failed_counter = 0;
-    char ftemp[6];
-    strcpy(ftemp,"");
-    char ftemp1[2];
-    ftemp1[1] = '\0';
-    char ftemp2[2];
-    ftemp2[1] = '\0';
-    char ftemp3[2];
-    ftemp2[1] = '\0';
+    char ftemp[6] = "";
+    char ftemp1[2] = "";
+    char ftemp2[2] = "";
+    char ftemp3[2] = "";
     int not_sound_counter = 0;
-    int pause_flag = 1;
 
-    FILE *log  = fopen("log.txt", "w");
-    if (log == NULL)
+    FILE *extract_sorted_bat = fopen("Extract_Sorted.bat","w");
+    if (extract_sorted_bat == NULL)
     {
-        printf("Error : Failed to open log file - %s\n", strerror(errno));
+        fprintf(log, "Error : Failed to open or create extraction .bat file - %s\n", strerror(errno));
+        fclose(log);
+        return 1;
+    }
+    FILE *del_sorted_bat = fopen("Delete_Extracted_ACB_Files.bat","w");
+    if (del_sorted_bat == NULL)
+    {
+        fprintf(log, "Error : Failed to open or create delete .bat file - %s\n", strerror(errno));
+        fclose(log);
         return 1;
     }
 
-    FILE *extract_sorted_bat = NULL;
-    FILE *del_sorted_bat = NULL;
+    FILE *extract_failed_bat = fopen("Extract_Failed.bat","w");
+    if (extract_failed_bat == NULL)
+    {
+        fprintf(log, "Error : Failed to open or create extraction .bat file - %s\n", strerror(errno));
+        fclose(log);
+        return 1;
+    }
 
-    FILE *extract_failed_bat = NULL;
-    FILE *del_failed_bat = NULL;
+    FILE *del_failed_bat = fopen("Delete_Failed_ACB_Files.bat","w");
+    if (del_failed_bat == NULL)
+    {
+        fprintf(log, "Error : Failed to open or create delete .bat file - %s\n", strerror(errno));
+        fclose(log);
+        return 1;
+    }
 
     d = opendir(input_dir);
     if (d)
@@ -76,9 +98,9 @@ int main()
 
                 if (entry_file != NULL)
                 {
-                    puts(path);
+                    printf("\n%s\n",path);
                     fprintf(log,"\n%s\n",path);
-                    fgets(buffer, bufferLength, entry_file);
+                    fgets(buffer, 5, entry_file);
 
                     if(strstr(buffer,"@UTF") == NULL)
                     {
@@ -96,8 +118,9 @@ int main()
 
                         strcat(output_path,path);
 
-                        createDirectory(output_folder);
-                        moveOutputFile(entry_path,output_path,output_folder,NULL,NULL);
+                        createDirectory(output_folder,log);
+                        moveOutputFile(entry_path,output_path,output_folder,NULL,NULL,log);
+                        fflush(log);
                         not_sound_counter++;
                         continue;
                     }
@@ -108,35 +131,16 @@ int main()
                         {
                             if(strstr(buffer,"Build:") != NULL)
                             {
-                                if(extract_sorted_bat == NULL)
-                                {
-                                    // The files here or under will be opened regardless of any file or the directory existing. Reason unknown.
-                                    extract_sorted_bat = fopen("Extract_Sorted.bat","w");
-                                    if (extract_sorted_bat == NULL)
-                                    {
-                                        fprintf(log, "Error : Failed to open or create extraction .bat file - %s\n", strerror(errno));
-                                        fclose(log);
-                                        return 1;
-                                    }
-                                    del_sorted_bat = fopen("Delete_Extracted_ACB_Files.bat","w");
-                                    if (del_sorted_bat == NULL)
-                                    {
-                                        fprintf(log, "Error : Failed to open or create delete .bat file - %s\n", strerror(errno));
-                                        fclose(log);
-                                        return 1;
-                                    }
-                                }
-
                                 strcpy(buffer,"");
-
                                 // Miss-encoded EOL
                                 fgets(buffer, 2, entry_file);
                                 fgets(buffer, 80, entry_file);
 
                                 fclose(entry_file);
+                                puts(buffer);
                                 fprintf(log,"%s\n",buffer);
                                 fflush(log);
-                                createOutputFolder(buffer,output_dir,entry_path,path,extract_sorted_bat,del_sorted_bat);
+                                createOutputFolder(buffer,output_dir,entry_path,path,extract_sorted_bat,del_sorted_bat,log);
                                 failed_to_sort = 0;
                                 success_counter++;
                                 fprintf(log,"Sorted\n");
@@ -144,33 +148,13 @@ int main()
                                 break;
                             }
                         }
-                        printf("\n");
                         fclose(entry_file);
                         if(failed_to_sort)
                         {
-                            if(extract_failed_bat==NULL)
-                            {
-                                extract_failed_bat = fopen("Extract_Failed.bat","w");
-                                if (extract_failed_bat == NULL)
-                                {
-                                    fprintf(log, "Error : Failed to open or create extraction .bat file - %s\n", strerror(errno));
-                                    fclose(log);
-                                    return 1;
-                                }
-
-                                del_failed_bat = fopen("Delete_Failed_ACB_Files.bat","w");
-                                if (del_failed_bat == NULL)
-                                {
-                                    fprintf(log, "Error : Failed to open or create delete .bat file - %s\n", strerror(errno));
-                                    fclose(log);
-                                    return 1;
-                                }
-                            }
-
                             failed_counter++;
 
                             strcpy(output_path,"./Failed/");
-                            createDirectory("Failed");
+                            createDirectory("Failed",log);
 
                             if(failed_counter<10)
                             {
@@ -201,8 +185,8 @@ int main()
 
                             strcat(output_path,path);
 
-                            createDirectory(output_folder);
-                            moveOutputFile(entry_path,output_path,output_folder,extract_failed_bat,del_failed_bat);
+                            createDirectory(output_folder,log);
+                            moveOutputFile(entry_path,output_path,output_folder,extract_failed_bat,del_failed_bat,log);
                             fprintf(log,"Failed to sort\n");
                             fflush(log);
                         }
@@ -214,20 +198,29 @@ int main()
                 }
             }
         }
+
         fprintf(extract_failed_bat,"pause");
         fclose(extract_failed_bat);
+
+        fprintf(del_failed_bat,"pause");
+        fclose(del_failed_bat);
+
+        fprintf(del_sorted_bat,"pause");
+        fclose(del_sorted_bat);
 
         fprintf(extract_sorted_bat,"pause");
         fclose(extract_sorted_bat);
 
-        fclose(del_sorted_bat);
-        fclose(del_failed_bat);
         closedir(d);
 
     }
 
+    count_time = clock() - count_time;
+    double time_taken_for_sort = ((double)count_time)/CLOCKS_PER_SEC;
     if(success_counter>0 || not_sound_counter>0 || failed_counter>0)
     {
+        printf("\nProcess time: %.2lf seconds\n",time_taken_for_sort);
+        fprintf(log,"\nProcess time: %.2lf seconds\n",time_taken_for_sort);
         if(not_sound_counter>0)
         {
             printf("\n%d Files aren't sound files. You can find them in the Assets-Movies folder\n",not_sound_counter);
@@ -235,25 +228,33 @@ int main()
         }
         if(failed_counter>0)
         {
-            printf("\n%d Files weren't sorted. You can try to extract them through Extract_Failed.bat.\nYou should manually sort them before deleting the .acb files.\n",failed_counter);
-            fprintf(log,"\n%d Files weren't sorted. You can try to extract them through Extract_Failed.bat\nYou should manually sort them before deleting the .acb files.\n",failed_counter);
+            printf("\n%d Files weren't sorted. You can try to extract them through Extract_Failed.bat.\n(You should manually sort them before deleting the .acb files)\n",failed_counter);
+            fprintf(log,"\n%d Files weren't sorted. You can try to extract them through Extract_Failed.bat\n(You should manually sort them before deleting the .acb files)\n",failed_counter);
         }
         if(success_counter>0)
         {
             printf("\n%d Files were successfully sorted.\n",success_counter);
+            fprintf(log,"\n%d Files were successfully sorted.\n",success_counter);
             int x;
-            printf("\nExtract sorted files now? 1 = yes || 0 = no\n");
+            printf("\nExtract sorted files now? 1 = yes , 0 = no\n");
             scanf("%d",&x);
             if(x==1)
             {
+                clock_t count_time_extract = clock();
+
                 system("Extract_Sorted.bat");
-                pause_flag = 0;
-                fprintf(log,"\nFiles successfully extracted.\n");
+
+                count_time_extract = clock() - count_time_extract;
+                double time_taken_for_extract = ((double)count_time_extract)/CLOCKS_PER_SEC;
+
+                printf("\nExtracting files took %.2lf seconds.\n",time_taken_for_extract);
+                fprintf(log,"\nSorted Files were successfully extracted taking a total of %.2lf seconds.\n",time_taken_for_extract);
+                getchar();
             }
             else
             {
-                printf("\nYou can try to extract them through Extract_Sorted.bat when you're ready\n");
-                fprintf(log,"\nYou can try to extract them through Extract_Sorted.bat when you're ready\n");
+                printf("\nYou can try to extract them through Extract_Sorted.bat when you're ready.\n");
+                fprintf(log,"\nSorted Files were not extracted. You can try to extract them through Extract_Sorted.bat when you're ready.\n");
 
             }
         }
@@ -266,29 +267,33 @@ int main()
         fprintf(log,"Nothing was processed\n");
     }
 
+
     fclose(log);
 
-    if(pause_flag)
-    {
-        printf("\nPress Enter to close...");
-        getchar();
-    }
+    printf("\nPress Enter to close...");
+    getchar();
+
     return(0);
 }
-void createDirectory(char name[])
+void createDirectory(char name[], FILE* log)
 {
     int out_dir = mkdir(name);
     if(out_dir && errno != EEXIST)
     {
-        printf("Error : Failed to create directory -  %s\n", strerror(errno));
+        printf("Error : Failed to create directory %s -  %s\n", name, strerror(errno));
+        fprintf(log,"Error : Failed to create directory %s -  %s\n", name, strerror(errno));
+        fflush(log);
     }
 }
-void moveOutputFile(char name[], char newpath[], char folder[], FILE *vgmstream, FILE* del)
+void moveOutputFile(char name[], char newpath[], char folder[], FILE *vgmstream, FILE* del, FILE* log)
 {
+    printf("Moving File to %s\n",newpath);
+    fprintf(log,"Moving File to %s\n",newpath);
     int a = rename(name,newpath);
     if (a)
     {
-        printf("Error : Failed to create directory for output file - %s\n", strerror(errno));
+        printf("Error : Failed to move output file - %s\n", strerror(errno));
+        fprintf(log,"Error : Failed to move output file - %s\n", strerror(errno));
         return;
     }
     if(vgmstream!=NULL)
@@ -302,37 +307,36 @@ void moveOutputFile(char name[], char newpath[], char folder[], FILE *vgmstream,
             fprintf(del,"del \"%s\"\n",newpath);
             fflush(del);
         }
-
     }
 }
-void createOutputFolder(char name[],char output_directory[], char old_path[], const char* old_name,FILE* vgmstream, FILE* del)
+void createOutputFolder(char name[],char output_directory[], char old_path[], const char* old_name,FILE* vgmstream, FILE* del, FILE* log)
 {
-    char *token = strtok(name, "_");
     char out_name[200];
-    char temp[20];
-    char temp_token[15];
-    char folder[100];
-
-    int might_not_extract_flag = 0;
-
     strcpy(out_name,output_directory);
 
-    printf("%s\n", token );
-    if(strcmp(token,"cha")==0 || strcmp(token,"win")==0 || strcmp(token,"RisingRush")==0 || strcmp(token,"cutin")==0)
+    char folder[100];
+    int might_not_extract_flag = 0;
+
+    if(strstr(name,"_se")!=NULL || strstr(name,"cmn")!=NULL)
     {
-        strcpy(temp_token,token);
-        token = strtok(NULL, "_");
-        if(strcmp(token,"se")==0)
+        strcat(out_name,"Sound Effects/");
+    }
+    else
+    {
+        char *token = strtok(name, "_");
+
+        char temp[20];
+        char temp_token[15];
+
+        if(strcmp(token,"cha")==0 || strcmp(token,"win")==0 || strcmp(token,"RisingRush")==0 || strcmp(token,"cutin")==0 || strstr(token,"Provo")!=NULL || strcmp(token,"formchange") == 0 )
         {
-            strcpy(temp,"Sound Effects/");
-        }
-        else
-        {
+            strcpy(temp_token,token);
+            token = strtok(NULL, "_");
             token = strtok(NULL, "_");
             token[0] = toupper(token[0]);
             strcat(out_name,token);
 
-            createDirectory(out_name);
+            createDirectory(out_name,log);
 
             if(strcmp(temp_token,"cha")==0)
                 strcpy(temp,"/Battle/");
@@ -342,94 +346,92 @@ void createOutputFolder(char name[],char output_directory[], char old_path[], co
                 strcpy(temp,"/Rising Rush/");
             else if(strcmp(temp_token,"cutin")==0)
                 strcpy(temp,"/Cutin/");
+            else if(strstr(token,"Provo")!=NULL)
+                strcpy(temp,"/Provocation/");
+            else if(strcmp(token,"formchange") == 0)
+                strcpy(temp,"/Transformation/");
 
+            strcat(out_name,temp);
         }
-        strcat(out_name,temp);
-    }
-    else if(strcmp(token,"bgm")==0)
-    {
-        strcat(out_name,"Background Music/");
-        might_not_extract_flag = 1;
-    }
-    else if(strcmp(token,"bgs")==0)
-    {
-        strcat(out_name,"Background Sounds/");
-        might_not_extract_flag = 1;
-    }
-    else if(strcmp(token,"str")==0 || strcmp(token,"sp")==0)
-    {
-        strcat(out_name,"Sound Effects/");
-    }
-    else if(strcmp(token,"gacha")==0)
-    {
-        token = strtok(NULL, "_");
-        if(strcmp(token,"card")==0)
+        else if(strcmp(token,"bgm")==0)
+        {
+            strcat(out_name,"Background Music/");
+            might_not_extract_flag = 1;
+        }
+        else if(strcmp(token,"bgs")==0)
+        {
+            strcat(out_name,"Background Sounds/");
+            might_not_extract_flag = 1;
+        }
+        else if(strcmp(token,"str")==0)
+        {
+            strcat(out_name,"Story/");
+        }
+        else if(strcmp(token,"gacha")==0)
+        {
+            token = strtok(NULL, "_");
+            if(strcmp(token,"card")==0)
+            {
+                for(int i=0; i<2; i++)
+                    token = strtok(NULL, "_");
+
+                token[0] = toupper(token[0]);
+                strcat(out_name,token);
+
+            }
+            else
+            {
+                token = strtok(NULL, "_");
+                token[0] = toupper(token[0]);
+                strcat(out_name,token);
+            }
+
+            createDirectory(out_name,log);
+
+            strcat(out_name,"/Homescreen/");
+        }
+        else if(strcmp(token,"change")==0)
         {
             for(int i=0; i<2; i++)
                 token = strtok(NULL, "_");
 
-            token[0] = toupper(token[0]);
-            strcat(out_name,token);
+            if(strcmp(token,"special")==0)
+                strcpy(temp,"/Special Cover/");
+            else if(strcmp(token,"norm")==0)
+                strcpy(temp,"/Normal Cover/");
+            else
+                strcpy(temp,"/Cover Rescue/");
 
-        }
-        else 
-        {
-            // This will cause a crash if a specific file with description "gacha_cmn" is in the input folder. No other files cause a crash as of March 2023.
             token = strtok(NULL, "_");
             token[0] = toupper(token[0]);
             strcat(out_name,token);
+
+            createDirectory(out_name,log);
+
+            strcat(out_name,temp);
         }
-
-        createDirectory(out_name);
-
-        strcat(out_name,"/Homescreen/");
-    }
-    else if(strcmp(token,"change")==0)
-    {
-        for(int i=0; i<2; i++)
-            token = strtok(NULL, "_");
-
-        if(strcmp(token,"special")==0)
-            strcpy(temp,"/Special Cover/");
-        else
-            strcpy(temp,"/Normal Cover/");
-
-        token = strtok(NULL, "_");
-        token[0] = toupper(token[0]);
-        strcat(out_name,token);
-
-        createDirectory(out_name);
-
-        strcat(out_name,temp);
-    }
-    else if(strcmp(token,"appear")==0)
-    {
-        for(int i=0; i<2; i++)
-            token = strtok(NULL, "_");
-
-        if(strcmp(token,"rival")==0)
-            strcpy(temp,"/Special Entrance/");
-        else
-            strcpy(temp,"/Normal Entrance/");
-
-        token = strtok(NULL, "_");
-        token[0] = toupper(token[0]);
-        strcat(out_name,token);
-
-        createDirectory(out_name);
-
-        strcat(out_name,temp);
-    }
-    else if(strcmp(token,"arts")==0)
-    {
-        token = strtok(NULL, "_");
-        if(strcmp(token,"se")==0)
+        else if(strcmp(token,"appear")==0)
         {
-            strcpy(temp,"Sound Effects/");
+            for(int i=0; i<2; i++)
+                token = strtok(NULL, "_");
+
+            if(strcmp(token,"rival")==0)
+                strcpy(temp,"/Special Entrance/");
+            else
+                strcpy(temp,"/Normal Entrance/");
+
+            token = strtok(NULL, "_");
+            token[0] = toupper(token[0]);
+            strcat(out_name,token);
+
+            createDirectory(out_name,log);
+
+            strcat(out_name,temp);
         }
-        else
+        else if(strcmp(token,"arts")==0)
         {
-            token = strtok(NULL, "_");
+            for(int i=0; i<2; i++)
+                token = strtok(NULL, "_");
 
             token[0] = toupper(token[0]);
             strcat(out_name,token);
@@ -447,27 +449,35 @@ void createOutputFolder(char name[],char output_directory[], char old_path[], co
             for(int i=0; i<2; i++)
                 token = strtok(NULL, "_");
 
-            createDirectory(out_name);
+            createDirectory(out_name,log);
 
+            strcat(out_name,temp);
         }
-        strcat(out_name,temp);
-    }
-    else
-    {
-        strcat(out_name,"Miscellaneous/");
-        might_not_extract_flag = 1;
-    }
+        else if(strcmp(token,"intro")== 0 || strcmp(token,"spine")== 0)
+        {
+            for(int i=0; i<3; i++)
+                token = strtok(NULL, "_");
 
-    puts(out_name);
+            token[0] = toupper(token[0]);
+
+            strcat(out_name,token);
+            strcat(out_name,"/Intro/");
+        }
+        else
+        {
+            strcat(out_name,"Miscellaneous/");
+            might_not_extract_flag = 1;
+        }
+    }
 
     strcpy(folder,out_name);
-    createDirectory(out_name);
+    createDirectory(out_name,log);
     strcat(out_name,old_name);
 
     if(might_not_extract_flag)
-        moveOutputFile(old_path,out_name,folder,vgmstream, NULL);
+        moveOutputFile(old_path,out_name,folder,vgmstream, NULL,log);
     else
-        moveOutputFile(old_path,out_name,folder,vgmstream, del);
+        moveOutputFile(old_path,out_name,folder,vgmstream, del,log);
 
 }
 char* replace_char(char str[])
