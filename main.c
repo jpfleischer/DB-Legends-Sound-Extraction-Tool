@@ -344,10 +344,10 @@ void createOutputFolder(char name[],char output_directory[], char old_path[], co
             else if(strcmp(temp_token,"RisingRush")==0)
                 strcpy(temp,"/Rising Rush/");
             else if(strcmp(temp_token,"cutin")==0)
-                strcpy(temp,"/Cutin/");
+                strcpy(temp,"/Main Ability/");
             else if(strstr(temp_token,"Provo")!=NULL)
                 strcpy(temp,"/Provocation/");
-            else if(strcmp(temp_token,"formchange") == 0)
+            else
                 strcpy(temp,"/Transformation/");
 
             strcat(out_name,temp);
@@ -369,25 +369,40 @@ void createOutputFolder(char name[],char output_directory[], char old_path[], co
         else if(strcmp(token,"gacha")==0)
         {
             token = strtok(NULL, "_");
-            if(strcmp(token,"card")==0)
+            if(strcmp(token,"vc")==0)
             {
-                for(int i=0; i<2; i++)
-                    token = strtok(NULL, "_");
+                strcat(out_name,"/Summon/");
+                createDirectory(out_name,log);
 
+                token = strtok(NULL, "_");
                 token[0] = toupper(token[0]);
-                strcat(out_name,token);
 
+                strcat(out_name,token);
+                strcat(out_name,"/");
             }
             else
             {
-                token = strtok(NULL, "_");
-                token[0] = toupper(token[0]);
-                strcat(out_name,token);
+                if(strcmp(token,"card")==0)
+                {
+                    for(int i=0; i<2; i++)
+                        token = strtok(NULL, "_");
+
+                    token[0] = toupper(token[0]);
+                    strcat(out_name,token);
+
+                }
+                else
+                {
+                    token = strtok(NULL, "_");
+                    token[0] = toupper(token[0]);
+                    strcat(out_name,token);
+                }
+
+                createDirectory(out_name,log);
+
+                strcat(out_name,"/Homescreen/");
             }
 
-            createDirectory(out_name,log);
-
-            strcat(out_name,"/Homescreen/");
         }
         else if(strcmp(token,"change")==0)
         {
@@ -465,7 +480,8 @@ void createOutputFolder(char name[],char output_directory[], char old_path[], co
 
             strcat(out_name,"/Intro/");
         }
-        else  if(strcmp(token,"sys")==0){
+        else  if(strcmp(token,"sys")==0)
+        {
             strcat(out_name,"Messages/");
         }
         else
