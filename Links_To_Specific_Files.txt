@@ -1,10 +1,16 @@
-Provided by crazydoomy#4471 on discord. He wrote a python script to generate them, you can contact him for questions or to generate an updated list.
+Provided by crazydoomy#4471 on discord. He wrote a python script to generate them, you can contact him for questions or to generate an updated list 
+(with both an old and an updated list, you can get the new files only and ignore all old ones)
 
 The link will download the file which you can then extract with vgmstream-cli:
-In cmd or a batch file >>> vgmstream-cli -S 0 -o ?03s_?n.wav name.acb
+
+In cmd or a batch file 
+---------------------------------------------
+vgmstream-cli -S 0 -o ?03s_?n.wav name.acb
+---------------------------------------------
 
 To iterate all over them (this goes through the directory so you can seperate them in folders)
->>> 
+In a batch file only
+---------------------------------------------
 setlocal EnableDelayedExpansion
 for /r %%i in (*.acb) do (
 set "x=%%~fi"
@@ -12,6 +18,8 @@ set "y=!x:~0,-4!"
 vgmstream-cli -S 0 -o "!x!_?03s_?n.wav" "%%i"
 )	
 pause
+---------------------------------------------
+The batch file for the above is provided in the release along with some to delete or rename the files.
 
 Note: Either provide the full path for vgmstream-cli or set it up in your environmental variables
 
