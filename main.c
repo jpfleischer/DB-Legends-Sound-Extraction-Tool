@@ -410,9 +410,9 @@ void createOutputFolder(char name[],char output_directory[], char old_path[], co
                 token = strtok(NULL, "_");
 
             if(strcmp(token,"special")==0)
-                strcpy(temp,"/Special Cover/");
+                strcpy(temp,"/Special Change/");
             else if(strcmp(token,"norm")==0)
-                strcpy(temp,"/Normal Cover/");
+                strcpy(temp,"/Normal Change/");
             else
                 strcpy(temp,"/Cover Rescue/");
 
