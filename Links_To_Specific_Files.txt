@@ -15,7 +15,7 @@ setlocal EnableDelayedExpansion
 for /r %%i in (*.acb) do (
 set "x=%%~fi"
 set "y=!x:~0,-4!"
-vgmstream-cli -S 0 -o "!x!_?03s_?n.wav" "%%i"
+vgmstream-cli -S 0 -o "!y!_?03s_?n.wav" "%%i"
 )	
 pause
 ---------------------------------------------
