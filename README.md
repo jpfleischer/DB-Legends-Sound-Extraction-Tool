@@ -49,6 +49,6 @@ Very Specific Notes You Can/Should Ignore:
 - Files that share the exact same name and output folder will be safely ignored, it's right to assume that's the reason some files are not being moved. 
 - Audio is mono for most/all files as far as I could tell. You're likely to want to improve their quality before using them in your projects. Some files will have low volume, newer versions of the character will have the correct volume for them.
 
-For any questions you can contact me on discord: LostImbecile#9192.
+For any questions you can contact me on discord: ~~LostImbecile#9192~~ lostimbecile.
 
 I'll be happy to help as soon as possible, and will take any suggestions or advice regarding the code or execution process
